@@ -1,6 +1,6 @@
 # Stadium OS v1.0 - Neubrutalist Bento Dashboard
 
-🚀 **Live Production URL:** [https://promptwars-murex.vercel.app](https://promptwars-murex.vercel.app)
+🚀 **Live Production URL:** [https://promptwars-git-main-freelancebysai-9144s-projects.vercel.app/](https://promptwars-git-main-freelancebysai-9144s-projects.vercel.app/)
 
 An industry-grade, event-driven backend and real-time operations control center designed for modern stadium operations, crowd safety, and emergency response management. Built on top of **Next.js (App Router)**, **Supabase (PostgreSQL + Realtime)**, **Zod (Validation)**, and **Google Gemini API (Generative AI)**.
 
