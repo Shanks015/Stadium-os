@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import NavigationFrame from './components/NavigationFrame';
 
 export const metadata: Metadata = {
   title: 'STADIUM OS v1.0 - Operations Dashboard',
@@ -18,7 +19,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="text-primary selection:bg-brutal-yellow selection:text-black">
-        {children}
+        <NavigationFrame>{children}</NavigationFrame>
       </body>
     </html>
   );
