@@ -1,0 +1,27 @@
+[
+  {
+    "gate_id": "Gate-A",
+    "crowd_density": 45,
+    "timestamp": "2026-07-10T11:00:00Z"
+  },
+  {
+    "gate_id": "Gate-B",
+    "crowd_density": 88,
+    "timestamp": "2026-07-10T11:00:00Z"
+  },
+  {
+    "gate_id": "Gate-C",
+    "crowd_density": 60,
+    "timestamp": "2026-07-10T11:00:00Z"
+  },
+  {
+    "gate_id": "Gate-D",
+    "crowd_density": 92,
+    "timestamp": "2026-07-10T11:00:00Z"
+  },
+  {
+    "gate_id": "Gate-E",
+    "crowd_density": 30,
+    "timestamp": "2026-07-10T11:00:00Z"
+  }
+]
