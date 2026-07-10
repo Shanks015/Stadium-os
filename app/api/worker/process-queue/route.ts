@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from '../../../lib/supabase';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get('authorization');

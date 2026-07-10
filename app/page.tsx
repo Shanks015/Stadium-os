@@ -1,14 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import AIOperationsTerminal from './components/AIOperationsTerminal';
-import GateHeatmap from './components/GateHeatmap';
-import Dropzone from './components/Dropzone';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabaseClient as supabase } from './lib/supabase';
 
 export default function Home() {
   const [dbStatus, setDbStatus] = useState<'CONNECTED' | 'DISCONNECTED'>('DISCONNECTED');

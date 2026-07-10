@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 const MetricPayloadSchema = z.array(
   z.object({
@@ -9,8 +9,6 @@ const MetricPayloadSchema = z.array(
     timestamp: z.string().datetime()
   })
 );
-
-const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 export async function POST(req: NextRequest) {
   try {
