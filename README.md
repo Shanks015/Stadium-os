@@ -13,33 +13,44 @@ This project focuses on the high-velocity crowd monitoring and safety routing ve
 
 ```mermaid
 graph TD;
-    A[Synthetic Telemetry / Ingestion Client] -->|POST Array of Metrics| B[/api/ingest];
-    B -->|Zod Validation| C{Valid?};
-    C -->|No| D[400 Bad Request];
-    C -->|Yes| E[(stadium_metrics_ledger)];
-    E -->|Realtime WebSocket| F[Gate Heatmap UI];
-    B -->|Check Thresholds: density >= 80%| G{High Density Anomaly?};
-    G -->|Yes: Asynchronous Dispatch| H[/api/worker/reason-anomaly];
-    G -->|No| I[202 Accepted];
-    H -->|Validate Authorization Token| J{Authorized?};
-    J -->|No| K[401 Unauthorized];
-    J -->|Yes| L[Google Gemini API];
-    L -->|Strict Schema JSON Generation| M{AI Success?};
-    M -->|Yes| N[(stadium_ai_ops_log)];
-    M -->|No: Fallback Alert| O[(stadium_ai_ops_log)];
-    N -->|Realtime WebSocket| P[AI Operations Terminal UI];
-    O -->|Realtime WebSocket| P;
+    A["Synthetic Telemetry / Ingestion Client"] -->|"POST JSON Payload"| B["/api/ingest"];
+    B -->|"Validate Schema"| C{Zod Safe Parse};
+    C -->|Invalid| D["400 Bad Request"];
+    C -->|Valid| E["Insert Job (Status: pending)"];
+    E -->|Commit| F[(stadium_job_queue)];
+    F -->|Return| G["202 Accepted"];
+    
+    H["cron / test-queue-worker.mjs"] -->|"Poll (HTTP POST)"| I["/api/worker/process-queue"];
+    I -->|"Claim oldest pending job"| J{"Job Available?"};
+    J -->|No| K["NO_JOBS_PENDING (200)"];
+    J -->|Yes| L["Set status = 'processing'"];
+    L -->|"Dump metrics to hot storage"| M[(stadium_metrics_ledger)];
+    M -->|Realtime WebSocket| N["Gate Heatmap UI"];
+    L -->|"Scan for crowd_density >= 80%"| O{"Anomaly Detected?"};
+    O -->|No| P["Mark Job: completed"];
+    O -->|Yes| Q["Call Gemini API"];
+    Q -->|"Strict JSON Prompt"| R{AI Success?};
+    R -->|Yes| S["Insert analysis details"];
+    R -->|No| T["Insert graceful fallback"];
+    S --> U[(stadium_ai_ops_log)];
+    T --> U;
+    U -->|Realtime WebSocket| V["AI Operations Terminal UI"];
+    U --> P;
+    P --> W["Return JOB_COMPLETED"];
+    
+    L -.->|"If Exception (Attempts < Max)"| X["Set status = 'pending'"];
+    L -.->|"If Exception (Attempts >= Max)"| Y["Set status = 'failed' & Log Error"];
 ```
 
-### 1. Ingestion Pipeline (`/api/ingest`)
-*   **Gate Metrics Ingestion**: High-velocity sensor payloads containing gate telemetry data are posted to `/api/ingest`.
-*   **Strict Runtime Schema**: Validated via `zod` to ensure strict types: `gate_id` (string), `crowd_density` (numeric, 0-100), and `timestamp` (ISO datetime).
-*   **Asynchronous Processing (Fire-and-Forget)**: Database writes happen first. If any gate exceeds a density of **80%**, the ingestion pipeline launches a non-blocking `POST` request to the anomaly worker route and immediately sends a `202 Accepted` status back to the client. This decouples database ingestion speeds from AI reasoning latency.
+### 1. Ingestion Pipeline Gateway (`/api/ingest`)
+*   **Low-Latency Ingestion**: Telemetry sensor arrays POST directly to `/api/ingest`.
+*   **Strict Runtime Schema**: Validated via `zod` to ensure type consistency (`gate_id`, `crowd_density` 0-100, and `timestamp`).
+*   **Transactional Outbox Queueing**: Telemetry payloads are written directly to `stadium_job_queue` in a single-digit millisecond transaction. The API gateway immediately signs off with a `202 Accepted` status to the client, guaranteeing high ingestion throughput and zero database write locks.
 
-### 2. GenAI Worker (`/api/worker/reason-anomaly`)
-*   **Worker Security**: The worker route validates an `INTERNAL_WORKER_SECRET` passed in the `Authorization` header to prevent open route invocation.
-*   **Reasoning Engine**: Leverages `gemini-2.5-flash` configured with a strict `responseMimeType: "application/json"` response schema. Gemini acts as a **Stadium Operations Director**, analyzing raw anomalies to compute severity (`High` or `Critical`), a deep operational explanation, and actionable deployment scripts.
-*   **Fault-Tolerant Fallback**: In the event of Gemini API rate-limits or system errors, the route gracefully handles exceptions by logging a predefined critical alert to ensure operational staff are still dispatched immediately.
+### 2. Transactional Queue Worker (`/api/worker/process-queue`)
+*   **FIFO Job State Machine**: The background worker claims the oldest `pending` job, atomically locking it by switching its state to `processing`.
+*   **Data Ingestion Dump**: Telemetry is committed to the hot-storage `stadium_metrics_ledger` for analytics and the Gate Heatmap dashboard.
+*   **Anomaly Assessment & AI Execution**: If any gate crowd density exceeds **80%**, the worker invokes the Gemini API using system parameters to analyze the threat. If successful, results write to `stadium_ai_ops_log`. On failure or rate-limits, a robust retry mechanism is kicked off, or logs errors cleanly for debugging on the queue.
 
 ### 3. Real-Time Telemetry & Bento Frontend
 *   **Live Heatmaps & Telemetry**: Uses Supabase Realtime channels to subscribe to the PostgreSQL Write-Ahead Log. Updates the Gate Heatmap in real-time as telemetry streams in.
