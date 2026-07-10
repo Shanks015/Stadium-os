@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin as supabase } from '../../lib/supabase';
-import type { ApiResponse } from '../../lib/types';
 
 /**
  * GET /api/health

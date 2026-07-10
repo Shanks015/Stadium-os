@@ -70,7 +70,9 @@ export async function POST(req: NextRequest) {
           }
         });
 
-        const aiOutput = JSON.parse(response.text.trim());
+        const responseText = response.text;
+        if (!responseText) throw new Error('Gemini returned empty response');
+        const aiOutput = JSON.parse(responseText.trim());
         
         // Save reasoning to ops log using DB gate_id column format (joined)
         await supabase.from('stadium_ai_ops_log').insert({

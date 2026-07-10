@@ -11,7 +11,7 @@ export default function Home() {
 
   useEffect(() => {
     const testConnection = async () => {
-      const { data, error } = await supabase.from('stadium_metrics_ledger').select('id').limit(1);
+      const { error } = await supabase.from('stadium_metrics_ledger').select('id').limit(1);
       if (!error) setDbStatus('CONNECTED');
     };
     testConnection();
