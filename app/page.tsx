@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { supabaseClient as supabase } from './lib/supabase';
+import AIOperationsTerminal from './components/AIOperationsTerminal';
+import GateHeatmap from './components/GateHeatmap';
+import Dropzone from './components/Dropzone';
 
 export default function Home() {
   const [dbStatus, setDbStatus] = useState<'CONNECTED' | 'DISCONNECTED'>('DISCONNECTED');
