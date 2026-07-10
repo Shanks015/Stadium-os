@@ -2,26 +2,31 @@
 
 import { useEffect, useState } from 'react';
 import { supabaseClient as supabase } from '../lib/supabase';
+import type { GateMetric, AiOpsLogEntry } from '../lib/types';
+
+interface SystemLogMetric extends GateMetric {
+  id: string;
+}
 
 export default function SystemLogsPage() {
-  const [metrics, setMetrics] = useState<any[]>([]);
-  const [aiLogs, setAiLogs] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<SystemLogMetric[]>([]);
+  const [aiLogs, setAiLogs] = useState<AiOpsLogEntry[]>([]);
 
   useEffect(() => {
     const fetchLogs = async () => {
       const { data: metricsData } = await supabase
         .from('stadium_metrics_ledger')
-        .select('*')
+        .select('id, gate_id, crowd_density, timestamp')
         .order('timestamp', { ascending: false })
         .limit(10);
-      if (metricsData) setMetrics(metricsData);
+      if (metricsData) setMetrics(metricsData as SystemLogMetric[]);
 
       const { data: aiData } = await supabase
         .from('stadium_ai_ops_log')
-        .select('*')
+        .select('id, gate_id, severity, reasoning, action_script, created_at')
         .order('created_at', { ascending: false })
         .limit(10);
-      if (aiData) setAiLogs(aiData);
+      if (aiData) setAiLogs(aiData as AiOpsLogEntry[]);
     };
 
     fetchLogs();

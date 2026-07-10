@@ -1,9 +1,34 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin as supabase } from '../../../lib/supabase';
 import { GoogleGenAI } from '@google/genai';
+import type { ApiResponse } from '../../../lib/types';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'placeholder' });
 
+interface AnomalyPayload {
+  gate_id: string;
+  crowd_density: number;
+  timestamp: string;
+}
+
+interface RequestBody {
+  anomalies?: AnomalyPayload[];
+}
+
+interface AiOutput {
+  severity?: 'High' | 'Critical' | 'WARNING' | 'CRITICAL';
+  reasoning?: string;
+  action_script?: Record<string, string> | string;
+}
+
+/**
+ * POST /api/worker/reason-anomaly
+ *
+ * Anomaly evaluation endpoint. Accepts a batch of anomalies, invokes Google Gemini
+ * to determine incident severity and evac scripts, and writes reports to stadium_ai_ops_log.
+ *
+ * @security Protected by Bearer token validation (INTERNAL_WORKER_SECRET)
+ */
 export async function POST(request: Request) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -11,13 +36,20 @@ export async function POST(request: Request) {
     
     // Validate INTERNAL_WORKER_SECRET
     if (!authHeader || authHeader !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { status: 'ERROR', message: 'Unauthorized' } satisfies ApiResponse,
+        { status: 401 }
+      );
     }
 
-    const { anomalies } = await request.json();
+    const body = (await request.json()) as RequestBody;
+    const anomalies = body.anomalies;
     
     if (!anomalies || anomalies.length === 0) {
-      return NextResponse.json({ message: 'No anomalies provided' }, { status: 400 });
+      return NextResponse.json(
+        { status: 'ERROR', message: 'No anomalies provided' } satisfies ApiResponse,
+        { status: 400 }
+      );
     }
 
     for (const anomaly of anomalies) {
@@ -44,8 +76,9 @@ Do not include markdown blocks, just raw JSON.`;
           }
         });
 
-        const textResponse = response.text || '{}';
-        const aiOutput = JSON.parse(textResponse);
+        const textResponse = response.text;
+        if (!textResponse) throw new Error('Gemini returned empty response');
+        const aiOutput = JSON.parse(textResponse.trim()) as AiOutput;
 
         // Save generated output to stadium_ai_ops_log
         await supabase.from('stadium_ai_ops_log').insert({
@@ -67,10 +100,17 @@ Do not include markdown blocks, just raw JSON.`;
       }
     }
 
-    return NextResponse.json({ message: 'Processing complete' }, { status: 200 });
+    return NextResponse.json(
+      { status: 'SUCCESS', message: 'Processing complete' } satisfies ApiResponse,
+      { status: 200 }
+    );
 
-  } catch (error) {
-    console.error('Worker Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown runtime failure';
+    console.error('Worker Error:', errorMessage);
+    return NextResponse.json(
+      { status: 'FATAL', message: 'Internal Server Error' } satisfies ApiResponse,
+      { status: 500 }
+    );
   }
 }

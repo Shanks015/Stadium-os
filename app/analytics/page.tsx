@@ -30,13 +30,15 @@ export default function AnalyticsPage() {
   const fetchData = useCallback(async () => {
     const { data: metricsData, error: metricsErr } = await supabase
       .from('stadium_metrics_ledger')
-      .select('*')
-      .order('timestamp', { ascending: false });
+      .select('id, gate_id, crowd_density, timestamp')
+      .order('timestamp', { ascending: false })
+      .limit(100);
 
     const { data: aiData, error: aiErr } = await supabase
       .from('stadium_ai_ops_log')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('id, gate_id, severity, reasoning')
+      .order('created_at', { ascending: false })
+      .limit(50);
 
     if (!metricsErr && metricsData) {
       setMetrics(metricsData);

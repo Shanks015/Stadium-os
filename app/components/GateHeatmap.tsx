@@ -20,7 +20,8 @@ export default function GateHeatmap() {
     const { data, error } = await supabase
       .from('stadium_metrics_ledger')
       .select('gate_id, crowd_density, timestamp')
-      .order('timestamp', { ascending: false });
+      .order('timestamp', { ascending: false })
+      .limit(40);
 
     if (!error && data) {
       const latest: Record<string, number> = {};

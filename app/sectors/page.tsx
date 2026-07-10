@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 export default function SectorsPage() {
   const [activeSector, setActiveSector] = useState('Alpha');
@@ -11,6 +11,10 @@ export default function SectorsPage() {
     { name: 'Gamma', capacity: '22,400', guards: 15, cameras: 10, status: 'WARNING', bg: '#00E5FF' },
     { name: 'Delta', capacity: '17,300', guards: 6, cameras: 4, status: 'NORMAL', bg: '#FFFFFF' },
   ];
+
+  const activeSectorData = useMemo(() => {
+    return sectors.find(s => s.name === activeSector) || sectors[0];
+  }, [activeSector]);
 
   return (
     <>
@@ -59,13 +63,13 @@ export default function SectorsPage() {
               <div className="bg-white text-black border-2 border-white p-4">
                 <span className="text-xs text-gray-500 uppercase font-bold block">Active Guards</span>
                 <p className="text-4xl font-black">
-                  {sectors.find(s => s.name === activeSector)?.guards} Units
+                  {activeSectorData.guards} Units
                 </p>
               </div>
               <div className="bg-white text-black border-2 border-white p-4">
                 <span className="text-xs text-gray-500 uppercase font-bold block">CCTV Feeds</span>
                 <p className="text-4xl font-black">
-                  {sectors.find(s => s.name === activeSector)?.cameras} Online
+                  {activeSectorData.cameras} Online
                 </p>
               </div>
             </div>
@@ -73,7 +77,7 @@ export default function SectorsPage() {
             {/* Mock Video Feed */}
             <div className="mt-6 border-4 border-white aspect-video bg-gray-900 flex items-center justify-center relative overflow-hidden">
               <div className="absolute top-4 left-4 bg-red-600 text-white font-bold px-2 py-1 text-xs uppercase animate-pulse border border-black">
-                LIVE - CAM 0{sectors.find(s => s.name === activeSector)?.cameras}
+                LIVE - CAM 0{activeSectorData.cameras}
               </div>
               <p className="text-gray-500 font-mono text-xs select-none uppercase">
                 [NO INCIDENTS DETECTED IN SECTOR {activeSector}]
