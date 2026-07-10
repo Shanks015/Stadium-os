@@ -55,7 +55,7 @@
    =========================== */
 body {
   background-color: #F4F4F0;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--font-hanken-grotesk), 'Hanken Grotesk', sans-serif;
 }
 
 /* ===========================

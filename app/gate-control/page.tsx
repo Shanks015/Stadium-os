@@ -1,16 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
+interface GateState {
+  id: string;
+  status: 'OPEN' | 'LOCKED';
+  bg: string;
+}
+
+/**
+ * GateControlPage — physical gates state administration dashboard.
+ * Simulates direct security locks and global lockdown overrides.
+ */
 export default function GateControlPage() {
-  const [gates, setGates] = useState([
+  const [gates, setGates] = useState<GateState[]>([
     { id: 'Gate-A', status: 'OPEN', bg: '#B497FF' },
     { id: 'Gate-B', status: 'OPEN', bg: '#E2FF32' },
     { id: 'Gate-C', status: 'LOCKED', bg: '#FF4911' },
     { id: 'Gate-D', status: 'OPEN', bg: '#00E5FF' },
   ]);
 
-  const toggleGate = (id: string) => {
+  const toggleGate = useCallback((id: string) => {
     setGates((prev) =>
       prev.map((gate) => {
         if (gate.id === id) {
@@ -24,7 +34,19 @@ export default function GateControlPage() {
         return gate;
       })
     );
-  };
+  }, []);
+
+  const forceLockAll = useCallback(() => {
+    setGates((prev) =>
+      prev.map((g) => ({ ...g, status: 'LOCKED', bg: '#FF4911' }))
+    );
+  }, []);
+
+  const releaseAllGates = useCallback(() => {
+    setGates((prev) =>
+      prev.map((g) => ({ ...g, status: 'OPEN', bg: '#E2FF32' }))
+    );
+  }, []);
 
   return (
     <>
@@ -42,13 +64,14 @@ export default function GateControlPage() {
             >
               <div className="flex justify-between items-start text-black">
                 <h3 className="text-3xl font-black uppercase">{gate.id}</h3>
-                <span className="px-3 py-1 font-bold text-xs uppercase border-2 border-black bg-white">
+                <span className="px-3 py-1 font-bold text-xs uppercase border-2 border-black bg-white" role="status">
                   {gate.status}
                 </span>
               </div>
 
               <button
                 onClick={() => toggleGate(gate.id)}
+                aria-label={`Toggle lock state of ${gate.id}`}
                 className="w-fit bg-black text-white hover:bg-white hover:text-black transition-colors font-bold uppercase text-xs px-6 py-3 border-4 border-black mt-6"
               >
                 TOGGLE {gate.status === 'OPEN' ? 'LOCKDOWN' : 'UNLOCK'}
@@ -57,34 +80,30 @@ export default function GateControlPage() {
           ))}
         </div>
 
-        <div className="lg:col-span-1 bento-card bg-black text-white p-6">
-          <h2 className="text-xl font-black uppercase mb-4 text-[#E2FF32] border-b-4 border-white pb-2">
-            Safety Override
-          </h2>
-          <p className="text-xs font-bold text-gray-400 mb-6 uppercase">
-            Immediately locks or unlocks all entry points across the stadium perimeter.
-          </p>
+        <div className="lg:col-span-1 bento-card bg-black text-white p-6 flex flex-col justify-between">
+          <div>
+            <h2 className="text-xl font-black uppercase mb-4 text-[#E2FF32] border-b-4 border-white pb-2">
+              Safety Override
+            </h2>
+            <p className="text-xs font-bold text-gray-400 mb-6 uppercase">
+              Immediately locks or unlocks all entry points across the stadium perimeter.
+            </p>
 
-          <button
-            onClick={() =>
-              setGates((prev) =>
-                prev.map((g) => ({ ...g, status: 'LOCKED', bg: '#FF4911' }))
-              )
-            }
-            className="w-full bg-[#FF4911] text-white font-black uppercase py-4 border-4 border-white mb-4 hover:translate-x-1 hover:translate-y-1 transition-all"
-          >
-            FORCE LOCK ALL
-          </button>
-          <button
-            onClick={() =>
-              setGates((prev) =>
-                prev.map((g) => ({ ...g, status: 'OPEN', bg: '#E2FF32' }))
-              )
-            }
-            className="w-full bg-white text-black font-black uppercase py-4 border-4 border-black hover:translate-x-1 hover:translate-y-1 transition-all"
-          >
-            RELEASE ALL GATES
-          </button>
+            <button
+              onClick={forceLockAll}
+              aria-label="Force lock all gates"
+              className="w-full bg-[#FF4911] text-white font-black uppercase py-4 border-4 border-white mb-4 hover:translate-x-1 hover:translate-y-1 transition-all"
+            >
+              FORCE LOCK ALL
+            </button>
+            <button
+              onClick={releaseAllGates}
+              aria-label="Release lockdown on all gates"
+              className="w-full bg-white text-black font-black uppercase py-4 border-4 border-black hover:translate-x-1 hover:translate-y-1 transition-all"
+            >
+              RELEASE ALL GATES
+            </button>
+          </div>
         </div>
       </div>
     </>

@@ -1,9 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
+interface SecurityAgent {
+  id: string;
+  name: string;
+  zone: string;
+  status: 'ACTIVE' | 'ON_BREAK' | 'DISPATCHED';
+  bg: string;
+}
+
+/**
+ * SecurityPage — active guards roster management and real-time zone dispatch operations.
+ */
 export default function SecurityPage() {
-  const [agents, setAgents] = useState([
+  const [agents, setAgents] = useState<SecurityAgent[]>([
     { id: 'SEC-101', name: 'Officer Miller', zone: 'Sector Alpha', status: 'ACTIVE', bg: '#B497FF' },
     { id: 'SEC-102', name: 'Officer Chen', zone: 'Sector Beta', status: 'ON_BREAK', bg: '#E2FF32' },
     { id: 'SEC-103', name: 'Officer Davis', zone: 'Sector Gamma', status: 'DISPATCHED', bg: '#00E5FF' },
@@ -11,7 +22,7 @@ export default function SecurityPage() {
 
   const [dispatchZone, setDispatchZone] = useState('Sector Alpha');
 
-  const handleDispatch = (e: React.FormEvent) => {
+  const handleDispatch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     setAgents(prev => [
       ...prev,
@@ -23,7 +34,7 @@ export default function SecurityPage() {
         bg: '#FFFFFF'
       }
     ]);
-  };
+  }, [dispatchZone]);
 
   return (
     <>
@@ -37,10 +48,11 @@ export default function SecurityPage() {
           <h2 className="text-2xl font-black uppercase mb-4 text-black border-b-4 border-black pb-2">
             Active Roster
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-4" role="list" aria-label="Active security officers roster">
             {agents.map((agent) => (
               <div
                 key={agent.id}
+                role="listitem"
                 className="p-4 border-4 border-black flex justify-between items-center text-black"
                 style={{ backgroundColor: agent.bg }}
               >
@@ -48,7 +60,7 @@ export default function SecurityPage() {
                   <h3 className="font-black text-lg uppercase">{agent.name}</h3>
                   <p className="text-xs font-bold uppercase">{agent.id} | {agent.zone}</p>
                 </div>
-                <span className={`px-2 py-1 font-bold text-xs uppercase border-2 border-black bg-white`}>
+                <span className="px-2 py-1 font-bold text-xs uppercase border-2 border-black bg-white" role="status">
                   {agent.status}
                 </span>
               </div>
@@ -62,14 +74,15 @@ export default function SecurityPage() {
             <h2 className="text-2xl font-black uppercase mb-4 text-[#E2FF32] border-b-4 border-white pb-2">
               Dispatch Terminal
             </h2>
-            <form onSubmit={handleDispatch} className="space-y-6">
+            <form onSubmit={handleDispatch} className="space-y-6" aria-label="Security dispatch form">
               <div>
-                <label className="text-xs font-bold uppercase text-gray-400 block mb-2">
+                <label id="zone-label" className="text-xs font-bold uppercase text-gray-400 block mb-2">
                   Target Zone
                 </label>
                 <select
                   value={dispatchZone}
                   onChange={(e) => setDispatchZone(e.target.value)}
+                  aria-labelledby="zone-label"
                   className="w-full p-3 border-4 border-white bg-white text-black font-bold uppercase"
                 >
                   <option>Sector Alpha</option>
@@ -88,7 +101,7 @@ export default function SecurityPage() {
             </form>
           </div>
 
-          <div className="mt-8 p-4 bg-gray-900 border-2 border-white font-mono text-xs text-[#00E5FF]">
+          <div className="mt-8 p-4 bg-gray-900 border-2 border-white font-mono text-xs text-[#00E5FF]" role="status" aria-live="polite">
             &gt; WAITING FOR TELEMETRY...<br />
             &gt; SYSTEM SECURE.
           </div>
