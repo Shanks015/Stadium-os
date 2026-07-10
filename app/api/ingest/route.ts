@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const validation = MetricPayloadSchema.safeParse(rawBody);
     
     if (!validation.success) {
-      return NextResponse.json({ status: 'ERROR', errors: validation.error.errors }, { status: 400 });
+      return NextResponse.json({ status: 'ERROR', errors: validation.error.issues }, { status: 400 });
     }
 
     // TRANSACTIONAL OUTBOX: Commit directly to queue table
