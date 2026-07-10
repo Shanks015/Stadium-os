@@ -19,6 +19,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="text-primary selection:bg-brutal-yellow selection:text-black">
+        <a href="#main-content" className="skip-nav">Skip to main content</a>
         <NavigationFrame>{children}</NavigationFrame>
       </body>
     </html>

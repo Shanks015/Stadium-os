@@ -27,7 +27,7 @@ export default function NavigationFrame({ children }: { children: React.ReactNod
       <header className="w-full h-16 border-b-4 border-black bg-[#F4F4F0] flex justify-between items-center px-8 fixed top-0 left-0 z-50 shadow-[0_4px_0_0_#000]">
         <div className="flex items-center gap-8 h-full">
           <span className="font-bold tracking-widest text-black uppercase">STADIUM OS v1.0</span>
-          <nav className="hidden md:flex h-full items-end gap-6 pb-1">
+          <nav aria-label="Main navigation" className="hidden md:flex h-full items-end gap-6 pb-1">
             {topLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -47,11 +47,11 @@ export default function NavigationFrame({ children }: { children: React.ReactNod
           </nav>
         </div>
         <div className="flex items-center gap-4">
-          <button className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 border-2 border-black">
-            <span className="material-symbols-outlined text-black">notifications</span>
+          <button aria-label="View notifications" className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 border-2 border-black">
+            <span className="material-symbols-outlined text-black" aria-hidden="true">notifications</span>
           </button>
-          <button className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 border-2 border-black">
-            <span className="material-symbols-outlined text-black">settings</span>
+          <button aria-label="Open settings" className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 border-2 border-black">
+            <span className="material-symbols-outlined text-black" aria-hidden="true">settings</span>
           </button>
           <div aria-label="Administrator profile" className="w-8 h-8 bg-black border-2 border-black"></div>
         </div>
@@ -66,7 +66,7 @@ export default function NavigationFrame({ children }: { children: React.ReactNod
             <span>Live Stream Enabled</span>
           </div>
         </div>
-        <nav className="flex-1 overflow-y-auto">
+        <nav aria-label="Sidebar navigation" className="flex-1 overflow-y-auto">
           {sidebarLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -98,7 +98,7 @@ export default function NavigationFrame({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content Area */}
-      <main className="w-full md:ml-64 p-8 overflow-y-auto bg-[#F4F4F0] min-h-[calc(100vh-4rem)]">
+      <main id="main-content" role="main" className="w-full md:ml-64 p-8 overflow-y-auto bg-[#F4F4F0] min-h-[calc(100vh-4rem)]">
         {children}
       </main>
     </div>
